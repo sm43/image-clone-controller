@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-clone-controller
+  namespace: image-clone-controller
+  labels:
+    app.kubernetes.io/part-of: image-clone-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: controller
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: default
+      app.kubernetes.io/part-of: image-clone-controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: controller
+        app.kubernetes.io/component: controller
+        app.kubernetes.io/instance: default
+        app.kubernetes.io/part-of: image-clone-controller
+    spec:
+      serviceAccountName: image-clone-controller
+      containers:
+      - name: controller
+        image: "ko://github.com/sm43/image-clone-controller/cmd/image-clone-controller"
+        imagePullPolicy: Always
