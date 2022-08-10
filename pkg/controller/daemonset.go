@@ -7,10 +7,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	"github.com/sm43/image-clone-controller/pkg/imagecloner"
 )
 
 type DaemonSet struct {
 	Client client.Client
+	Cloner *imagecloner.ImageCloner
 }
 
 var _ reconcile.Reconciler = &DaemonSet{}

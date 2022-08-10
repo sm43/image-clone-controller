@@ -14,6 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	ctrl "github.com/sm43/image-clone-controller/pkg/controller"
+	"github.com/sm43/image-clone-controller/pkg/imagecloner"
 )
 
 func init() {
@@ -26,9 +27,14 @@ func main() {
 		log.Fatal("failed to create new manager", err)
 	}
 
+	cloner, err := imagecloner.NewCloner()
+	if err != nil {
+		log.Fatal("failed to init cloner: ", err)
+	}
+
 	// deployment controller
 	deploymentCtrl, err := controller.New("deployment-controller", mgr, controller.Options{
-		Reconciler: &ctrl.Deployment{Client: mgr.GetClient()},
+		Reconciler: &ctrl.Deployment{Client: mgr.GetClient(), Cloner: cloner},
 	})
 	if err != nil {
 		log.Fatal("failed to add controller: ", err)
@@ -40,7 +46,7 @@ func main() {
 
 	// daemonSet controller
 	daemonSetCtrl, err := controller.New("daemonset-controller", mgr, controller.Options{
-		Reconciler: &ctrl.DaemonSet{Client: mgr.GetClient()},
+		Reconciler: &ctrl.DaemonSet{Client: mgr.GetClient(), Cloner: cloner},
 	})
 	if err != nil {
 		log.Fatal("failed to add controller: ", err)
