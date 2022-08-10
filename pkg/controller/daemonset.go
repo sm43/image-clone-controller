@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	v1 "k8s.io/api/apps/v1"
+	"k8s.io/api/apps/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -45,56 +45,7 @@ func (r *DaemonSet) Reconcile(ctx context.Context, request reconcile.Request) (r
 		return reconcile.Result{}, nil
 	}
 
-	daemonSetUpdated := false
-
-	// containers
-	for i, container := range daemonSet.Spec.Template.Spec.Containers {
-		// check if image is already backup image
-		if r.Cloner.IsBackupImage(container.Image) {
-			continue
-		}
-		// if image is not backup then clone it and replace
-		clonedImage, err := r.Cloner.Clone(container.Image)
-		if err != nil {
-			return reconcile.Result{}, nil
-		}
-		daemonSet.Spec.Template.Spec.Containers[i].Image = clonedImage
-
-		daemonSetUpdated = true
-	}
-
-	// init containers
-	for i, container := range daemonSet.Spec.Template.Spec.InitContainers {
-		// check if image is already backup image
-		if r.Cloner.IsBackupImage(container.Image) {
-			continue
-		}
-		// if image is not backup then clone it and replace
-		clonedImage, err := r.Cloner.Clone(container.Image)
-		if err != nil {
-			return reconcile.Result{}, nil
-		}
-		daemonSet.Spec.Template.Spec.InitContainers[i].Image = clonedImage
-
-		daemonSetUpdated = true
-	}
-
-	// ephemeral containers
-	for i, container := range daemonSet.Spec.Template.Spec.EphemeralContainers {
-		// check if image is already backup image
-		if r.Cloner.IsBackupImage(container.Image) {
-			continue
-		}
-		// if image is not backup then clone it and replace
-		clonedImage, err := r.Cloner.Clone(container.Image)
-		if err != nil {
-			return reconcile.Result{}, nil
-		}
-		daemonSet.Spec.Template.Spec.EphemeralContainers[i].Image = clonedImage
-
-		daemonSetUpdated = true
-	}
-
+	daemonSetUpdated, err := podImageCloner(r.Cloner, &daemonSet.Spec.Template.Spec)
 	if daemonSetUpdated {
 		err := r.Client.Update(ctx, daemonSet)
 		if err != nil {
