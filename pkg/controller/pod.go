@@ -9,7 +9,7 @@ import (
 	"github.com/sm43/image-clone-controller/pkg/imagecloner"
 )
 
-func podImageCloner(logger *logr.Logger, cloner *imagecloner.ImageCloner, podSpec *v1.PodSpec) (bool, error) {
+func podImageCloner(logger *logr.Logger, cloner imagecloner.ImageCloner, podSpec *v1.PodSpec) (bool, error) {
 	resourceUpdated := false
 
 	// containers

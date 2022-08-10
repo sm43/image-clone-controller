@@ -15,7 +15,7 @@ import (
 
 type Deployment struct {
 	Client client.Client
-	Cloner *imagecloner.ImageCloner
+	Cloner imagecloner.ImageCloner
 }
 
 var _ reconcile.Reconciler = &Deployment{}

@@ -8,11 +8,11 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 )
 
-func (ic *ImageCloner) IsBackupImage(image string) bool {
+func (ic *imageCloner) IsBackupImage(image string) bool {
 	return strings.Contains(image, fmt.Sprint(ic.registry+"/"+ic.repository))
 }
 
-func (ic *ImageCloner) Clone(image string) (string, error) {
+func (ic *imageCloner) Clone(image string) (string, error) {
 	sourceRef, err := name.ParseReference(image)
 	if err != nil {
 		return "", err
@@ -38,7 +38,7 @@ func (ic *ImageCloner) Clone(image string) (string, error) {
 	return targetImage, nil
 }
 
-func (ic *ImageCloner) getTargetImage(source name.Reference) string {
+func (ic *imageCloner) getTargetImage(source name.Reference) string {
 	targetImage := ic.registry + "/" + ic.repository
 	targetImage += "/" + strings.Replace(source.Context().RegistryStr(), ":", "_", 1)
 	targetImage += "_" + strings.ReplaceAll(source.Context().RepositoryStr(), "/", "_")

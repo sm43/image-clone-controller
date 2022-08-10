@@ -7,13 +7,18 @@ import (
 	"github.com/google/go-containerregistry/pkg/authn"
 )
 
-type ImageCloner struct {
+type ImageCloner interface {
+	IsBackupImage(string) bool
+	Clone(string) (string, error)
+}
+
+type imageCloner struct {
 	auth       authn.Authenticator
 	registry   string
 	repository string
 }
 
-func NewCloner() (*ImageCloner, error) {
+func NewCloner() (ImageCloner, error) {
 	registry := os.Getenv("REGISTRY_NAME")
 	repository := os.Getenv("REPOSITORY_NAME")
 	username := os.Getenv("REGISTRY_USERNAME")
@@ -29,7 +34,7 @@ func NewCloner() (*ImageCloner, error) {
 		Username: username,
 		Password: password,
 	}
-	return &ImageCloner{
+	return &imageCloner{
 		auth:       authn.FromConfig(auth),
 		registry:   registry,
 		repository: repository,

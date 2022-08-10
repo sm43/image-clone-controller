@@ -32,7 +32,7 @@ func TestIsBackupImage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ic := ImageCloner{
+			ic := imageCloner{
 				registry:   "ttl.sh",
 				repository: "sm43",
 			}
@@ -67,7 +67,7 @@ func TestGetTargetImage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ic := ImageCloner{
+			ic := imageCloner{
 				registry:   "ttl.sh",
 				repository: "sm43",
 			}
