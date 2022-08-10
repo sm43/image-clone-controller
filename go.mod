@@ -3,11 +3,12 @@ module github.com/sm43/image-clone-controller
 go 1.17
 
 require (
+	github.com/go-logr/logr v1.2.0
+	github.com/google/go-containerregistry v0.11.0
+	gotest.tools/v3 v3.0.3
 	k8s.io/api v0.24.2
 	sigs.k8s.io/controller-runtime v0.12.3
 )
-
-require github.com/google/go-containerregistry v0.11.0
 
 require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
@@ -22,7 +23,6 @@ require (
 	github.com/emicklei/go-restful v2.9.5+incompatible // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
-	github.com/go-logr/logr v1.2.0 // indirect
 	github.com/go-logr/zapr v1.2.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.5 // indirect

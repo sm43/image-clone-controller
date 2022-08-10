@@ -13,16 +13,17 @@ func (ic *ImageCloner) IsBackupImage(image string) bool {
 }
 
 func (ic *ImageCloner) Clone(image string) (string, error) {
-	sourceTag, err := name.NewTag(image)
-	if err != nil {
-		return "", err
-	}
-	sourceImg, err := remote.Image(sourceTag)
+	sourceRef, err := name.ParseReference(image)
 	if err != nil {
 		return "", err
 	}
 
-	targetImage := ic.getTargetImage(sourceTag)
+	sourceImg, err := remote.Image(sourceRef)
+	if err != nil {
+		return "", err
+	}
+
+	targetImage := ic.getTargetImage(sourceRef)
 	targetTag, err := name.NewTag(targetImage)
 	if err != nil {
 		return "", err
@@ -37,9 +38,17 @@ func (ic *ImageCloner) Clone(image string) (string, error) {
 	return targetImage, nil
 }
 
-func (ic *ImageCloner) getTargetImage(source name.Tag) string {
-	parts := strings.Split(source.RepositoryStr(), "/")
-	return ic.registry + "/" + ic.repository + "/" + parts[len(parts)-1] + ":" + source.TagStr()
+func (ic *ImageCloner) getTargetImage(source name.Reference) string {
+	targetImage := ic.registry + "/" + ic.repository
+	targetImage += "/" + strings.Replace(source.Context().RegistryStr(), ":", "_", 1)
+	targetImage += "_" + strings.ReplaceAll(source.Context().RepositoryStr(), "/", "_")
+	if tag, ok := source.(name.Tag); ok {
+		targetImage += ":" + tag.TagStr()
+	}
+	if digest, ok := source.(name.Digest); ok {
+		targetImage += "@" + digest.DigestStr()
+	}
+	return targetImage
 }
 
 func isImagePresent(repository, tag string, opt remote.Option) bool {
