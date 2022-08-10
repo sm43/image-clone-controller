@@ -47,18 +47,50 @@ func (r *Deployment) Reconcile(ctx context.Context, request reconcile.Request) (
 
 	deploymentUpdated := false
 
+	// containers
 	for i, container := range deployment.Spec.Template.Spec.Containers {
 		// check if image is already backup image
 		if r.Cloner.IsBackupImage(container.Image) {
 			continue
 		}
-
 		// if image is not backup then clone it and replace
 		clonedImage, err := r.Cloner.Clone(container.Image)
 		if err != nil {
 			return reconcile.Result{}, nil
 		}
 		deployment.Spec.Template.Spec.Containers[i].Image = clonedImage
+
+		deploymentUpdated = true
+	}
+
+	// init containers
+	for i, container := range deployment.Spec.Template.Spec.InitContainers {
+		// check if image is already backup image
+		if r.Cloner.IsBackupImage(container.Image) {
+			continue
+		}
+		// if image is not backup then clone it and replace
+		clonedImage, err := r.Cloner.Clone(container.Image)
+		if err != nil {
+			return reconcile.Result{}, nil
+		}
+		deployment.Spec.Template.Spec.InitContainers[i].Image = clonedImage
+
+		deploymentUpdated = true
+	}
+
+	// ephemeral containers
+	for i, container := range deployment.Spec.Template.Spec.EphemeralContainers {
+		// check if image is already backup image
+		if r.Cloner.IsBackupImage(container.Image) {
+			continue
+		}
+		// if image is not backup then clone it and replace
+		clonedImage, err := r.Cloner.Clone(container.Image)
+		if err != nil {
+			return reconcile.Result{}, nil
+		}
+		deployment.Spec.Template.Spec.EphemeralContainers[i].Image = clonedImage
 
 		deploymentUpdated = true
 	}
