@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 
@@ -10,6 +11,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	klog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -26,7 +28,13 @@ func init() {
 }
 
 func main() {
-	mgr, err := manager.New(config.GetConfigOrDie(), manager.Options{})
+	var probesPort string
+	flag.StringVar(&probesPort, "health-probe-bind-address", ":8081", "The port address at which the probe endpoint binds to")
+
+	flag.Parse()
+	mgr, err := manager.New(config.GetConfigOrDie(), manager.Options{
+		HealthProbeBindAddress: probesPort,
+	})
 	if err != nil {
 		log.Fatal("failed to create new manager", err)
 	}
@@ -58,6 +66,14 @@ func main() {
 
 	if err := daemonSetCtrl.Watch(&source.Kind{Type: &v1.DaemonSet{}}, &handler.EnqueueRequestForObject{}, queueFilter()); err != nil {
 		log.Fatal("failed to watch daemonset: ", err)
+	}
+
+	if err := mgr.AddHealthzCheck("health", healthz.Ping); err != nil {
+		log.Fatal(err, "failed to set up health check")
+
+	}
+	if err := mgr.AddReadyzCheck("check", healthz.Ping); err != nil {
+		log.Fatal(err, "failed to set up ready check")
 	}
 
 	// starting manager
