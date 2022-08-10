@@ -1,12 +1,15 @@
 package controller
 
 import (
-	"k8s.io/api/core/v1"
+	"fmt"
+
+	"github.com/go-logr/logr"
+	v1 "k8s.io/api/core/v1"
 
 	"github.com/sm43/image-clone-controller/pkg/imagecloner"
 )
 
-func podImageCloner(cloner *imagecloner.ImageCloner, podSpec *v1.PodSpec) (bool, error) {
+func podImageCloner(logger *logr.Logger, cloner *imagecloner.ImageCloner, podSpec *v1.PodSpec) (bool, error) {
 	resourceUpdated := false
 
 	// containers
@@ -15,12 +18,14 @@ func podImageCloner(cloner *imagecloner.ImageCloner, podSpec *v1.PodSpec) (bool,
 		if cloner.IsBackupImage(container.Image) {
 			continue
 		}
+		logger.Info("cloning image : " + container.Image)
 		// if image is not backup then clone it and replace
 		clonedImage, err := cloner.Clone(container.Image)
 		if err != nil {
 			return resourceUpdated, err
 		}
 		podSpec.Containers[i].Image = clonedImage
+		logger.Info(fmt.Sprintf("cloned image for %s => %s", container.Image, clonedImage))
 
 		resourceUpdated = true
 	}
@@ -31,12 +36,14 @@ func podImageCloner(cloner *imagecloner.ImageCloner, podSpec *v1.PodSpec) (bool,
 		if cloner.IsBackupImage(container.Image) {
 			continue
 		}
+		logger.Info("cloning image : " + container.Image)
 		// if image is not backup then clone it and replace
 		clonedImage, err := cloner.Clone(container.Image)
 		if err != nil {
 			return resourceUpdated, err
 		}
 		podSpec.InitContainers[i].Image = clonedImage
+		logger.Info(fmt.Sprintf("cloned image for %s => %s", container.Image, clonedImage))
 
 		resourceUpdated = true
 	}
@@ -47,12 +54,14 @@ func podImageCloner(cloner *imagecloner.ImageCloner, podSpec *v1.PodSpec) (bool,
 		if cloner.IsBackupImage(container.Image) {
 			continue
 		}
+		logger.Info("cloning image : " + container.Image)
 		// if image is not backup then clone it and replace
 		clonedImage, err := cloner.Clone(container.Image)
 		if err != nil {
 			return resourceUpdated, err
 		}
 		podSpec.EphemeralContainers[i].Image = clonedImage
+		logger.Info(fmt.Sprintf("cloned image for %s => %s", container.Image, clonedImage))
 
 		resourceUpdated = true
 	}

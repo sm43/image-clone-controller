@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/api/apps/v1"
+	v1 "k8s.io/api/apps/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -21,11 +21,11 @@ type DaemonSet struct {
 var _ reconcile.Reconciler = &DaemonSet{}
 
 func (r *DaemonSet) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
-	logger := log.FromContext(ctx)
+	logger := log.FromContext(ctx).WithValues("daemonSet", request.NamespacedName)
 
 	// TODO: remove this
-	// reconcile only from image-clone-controller namespace
-	if !strings.HasPrefix(request.NamespacedName.String(), "image-clone-controller/test") {
+	// reconcile only from default namespace
+	if !strings.HasPrefix(request.NamespacedName.String(), "default") {
 		return reconcile.Result{}, nil
 	}
 
@@ -45,13 +45,18 @@ func (r *DaemonSet) Reconcile(ctx context.Context, request reconcile.Request) (r
 		return reconcile.Result{}, nil
 	}
 
-	daemonSetUpdated, err := podImageCloner(r.Cloner, &daemonSet.Spec.Template.Spec)
+	daemonSetUpdated, err := podImageCloner(&logger, r.Cloner, &daemonSet.Spec.Template.Spec)
+	if err != nil {
+		return reconcile.Result{Requeue: true}, err
+	}
+
 	if daemonSetUpdated {
 		err := r.Client.Update(ctx, daemonSet)
 		if err != nil {
 			logger.Error(err, "failed to update daemonSet")
 			return reconcile.Result{Requeue: true}, nil
 		}
+		logger.Info("updated images in daemonSet")
 	}
 	return reconcile.Result{}, nil
 }

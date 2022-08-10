@@ -1,6 +1,7 @@
 package imagecloner
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/google/go-containerregistry/pkg/name"
@@ -8,8 +9,7 @@ import (
 )
 
 func (ic *ImageCloner) IsBackupImage(image string) bool {
-	sourceTag, _ := name.NewTag(image)
-	return sourceTag.RegistryStr() == ic.registry
+	return strings.Contains(image, fmt.Sprint(ic.registry+"/"+ic.repository))
 }
 
 func (ic *ImageCloner) Clone(image string) (string, error) {

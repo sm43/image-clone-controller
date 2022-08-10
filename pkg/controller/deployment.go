@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/api/apps/v1"
+	v1 "k8s.io/api/apps/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -25,7 +25,7 @@ func (r *Deployment) Reconcile(ctx context.Context, request reconcile.Request) (
 
 	// TODO: remove this
 	// reconcile only from image-clone-controller namespace
-	if !strings.HasPrefix(request.NamespacedName.String(), "image-clone-controller/test") {
+	if !strings.HasPrefix(request.NamespacedName.String(), "default") {
 		return reconcile.Result{}, nil
 	}
 
@@ -45,13 +45,18 @@ func (r *Deployment) Reconcile(ctx context.Context, request reconcile.Request) (
 		return reconcile.Result{}, nil
 	}
 
-	deploymentUpdated, err := podImageCloner(r.Cloner, &deployment.Spec.Template.Spec)
+	deploymentUpdated, err := podImageCloner(&logger, r.Cloner, &deployment.Spec.Template.Spec)
+	if err != nil {
+		return reconcile.Result{Requeue: true}, err
+	}
+
 	if deploymentUpdated {
 		err := r.Client.Update(ctx, deployment)
 		if err != nil {
 			logger.Error(err, "failed to update deployment")
 			return reconcile.Result{Requeue: true}, nil
 		}
+		logger.Info("updated images in deployment")
 	}
 	return reconcile.Result{}, nil
 }
