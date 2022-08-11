@@ -3,7 +3,6 @@ package controller
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	v1 "k8s.io/api/apps/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -22,12 +21,6 @@ var _ reconcile.Reconciler = &DaemonSet{}
 
 func (r *DaemonSet) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	logger := log.FromContext(ctx).WithValues("daemonSet", request.NamespacedName)
-
-	// TODO: remove this
-	// reconcile only from default namespace
-	if !strings.HasPrefix(request.NamespacedName.String(), "default") {
-		return reconcile.Result{}, nil
-	}
 
 	logger.Info(fmt.Sprint("Reconciling daemonSet ", request.NamespacedName))
 
