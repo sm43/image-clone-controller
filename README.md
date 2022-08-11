@@ -6,6 +6,8 @@ we use them, breaking our deployments or daemonsets.
 This controller make sure all the deployments and daemonsets running on the cluster are running using the images from our own registry which we
 have configured with it. However, it will ignore kube-system namespace and the namespace where the controller is running.
 
+[![asciicast](https://asciinema.org/a/514122.svg)](https://asciinema.org/a/514122)
+
 ### Prerequisites
 
 * a kubernetes cluster
